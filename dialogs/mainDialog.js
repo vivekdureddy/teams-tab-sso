@@ -1,11 +1,12 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-const { ConfirmPrompt, DialogSet, DialogTurnStatus, OAuthPrompt, WaterfallDialog, ComponentDialog } = require('botbuilder-dialogs');
+const { ConfirmPrompt, TextPrompt, DialogSet, DialogTurnStatus, OAuthPrompt, WaterfallDialog, ComponentDialog } = require('botbuilder-dialogs');
 const { LogoutDialog } = require('./logoutDialog');
 const { SkillDialog } = require('./skillDialog');
 
 const CONFIRM_PROMPT = 'ConfirmPrompt';
+const TEXT_PROMPT = 'TextPrompt';
 const MAIN_DIALOG = 'MainDialog';
 const MAIN_WATERFALL_DIALOG = 'MainWaterfallDialog';
 const OAUTH_PROMPT = 'OAuthPrompt';
@@ -24,11 +25,14 @@ class MainDialog extends SkillDialog {
             timeout: 300000
         }));
         this.addDialog(new ConfirmPrompt(CONFIRM_PROMPT));
+        this.addDialog(new TextPrompt(TEXT_PROMPT));
         this.addDialog(new WaterfallDialog(MAIN_WATERFALL_DIALOG, [
             this.promptStep.bind(this),
             this.loginStep.bind(this),
-            this.ensureOAuth.bind(this),
-            this.displayToken.bind(this)
+            this.secondStep.bind(this),
+            this.thirdStep.bind(this)
+            // this.ensureOAuth.bind(this),
+            // this.displayToken.bind(this)
         ]));
 
         // this.addDialog(new WaterfallDialog(SKILL_DIALOG, [
@@ -46,27 +50,28 @@ class MainDialog extends SkillDialog {
     async run(context, accessor) {
         console.log("=== console in main dialog run method ===",context,"=== accessor ===",accessor,"=== id ===",this);
         const dialogSet = new DialogSet(accessor);
-        console.log("dialogSet================================",dialogSet)
         dialogSet.add(this);
         const skillDialog = new SkillDialog();
         dialogSet.add(skillDialog);
         const dialogContext = await dialogSet.createContext(context);
-        console.log("dialogContext===============================",dialogContext)
         const results = await dialogContext.continueDialog();
         console.log("results=======================================",results,context.activity)
-        if(context.activity.text == "skill"){
+        if(context.activity.text.toLowerCase() == "skill"){
             // await dialogContext.endDialog();
             await dialogContext.beginDialog(skillDialog.id);
         }else 
         if (results.status === DialogTurnStatus.empty) {
             await dialogContext.beginDialog(this.id);
         }
+        // else if(results.status === DialogTurnStatus.empty){
+        //     await context.sendActivity('Welcome to Supervity Bot. Please type \'login\' to sign-in. Type \'logout\' to sign-out.');
+        // }
     }
 
     async promptStep(stepContext) {
         console.log("=== console in main dialog prompt step method ===")
         try {
-            await stepContext.context.sendActivity("Initiating Login Process:")
+            await stepContext.context.sendActivity("Initiating Login Process...");
             return await stepContext.beginDialog(OAUTH_PROMPT);
         } catch (err) {
             console.error(err);
@@ -88,8 +93,7 @@ class MainDialog extends SkillDialog {
         console.log("=== console in main dialog login step method ===")
         // Get the token from the previous step. Note that we could also have gotten the
         // token directly from the prompt itself. There is an example of this in the next method.
-        const tokenResponse = stepContext.result;
-        console.log("token========================",tokenResponse)
+        let tokenResponse = stepContext.result;
         if (!tokenResponse || !tokenResponse.token) {
             await stepContext.context.sendActivity('Login was not successful please try again.');
         } else {
@@ -100,19 +104,106 @@ class MainDialog extends SkillDialog {
             // const photoBase64 = await client.GetPhotoAsync(tokenResponse.token);
             // const card = CardFactory.thumbnailCard("", CardFactory.images([photoBase64]));
             // await stepContext.context.sendActivity({attachments: [card]});
-            return await stepContext.prompt(CONFIRM_PROMPT, 'Would you like to view your token?');
+
+            // return await stepContext.prompt(CONFIRM_PROMPT, 'Would you like to view your token?');
+            let user_email;
+            try {
+                let parseToken = JSON.parse(atob(tokenResponse.token.split('.')[1]));
+                user_email = parseToken.email;
+                console.log("parsed token:",parseToken)
+            } catch(err) {
+                console.log("error in parse token:",err);
+                return await stepContext.endDialog();
+            }
+            await stepContext.context.sendActivity(`You have been successfully logged in as '${user_email}'`);
+            return await stepContext.prompt(TEXT_PROMPT, 'Type the \'Skill\' that you want to Search for:');
+
         }
+        return await stepContext.endDialog();
+    }
+
+    async secondStep(stepContext) {
+        console.log("skill dialog second step:",stepContext)
+        const skill_name = stepContext.result;
+        await stepContext.context.sendActivity(`You have searched for '${skill_name}'`);
+        const response = await fetch(process.env.skillUrl+"?skillname="+skill_name);
+        let skills = await response.json();
+        skills = skills.data.results
+        console.log("============================================================",skills)
+        let adaptiveCard = [];
+        if(skills.length){
+            skills = skills.length > 9 ? skills.splice(0, 10) : skills;
+            for(let i=0; i<skills.length; ++i){
+                let card = {
+                    contentType: "application/vnd.microsoft.card.adaptive",
+                    content: {
+                        $schema: "http://adaptivecards.io/schemas/adaptive-card.json",
+                        type: "AdaptiveCard",
+                        version: "1.0",
+                        body: [
+                            {
+                                type: "Image",
+                                style: "Person",
+                                url: skills[i].IMAGE,
+                                size: "Large"
+                            },
+                            {
+                                type: "TextBlock",
+                                size: "Medium",
+                                weight: "Bolder",
+                                text: skills[i].SKILL_NAME,
+                                wrap: true
+                            },
+                            {
+                                type: "TextBlock",
+                                text: skills[i].SKILL_DESCRIPTION,
+                                wrap: true
+                            }
+                        ],
+                        actions: [
+                            {
+                                type: "Action.Submit",
+                                title: "Use Skill",
+                                data: {
+                                    msteams: {
+                                        type: "messageBack",
+                                        displayText: skills[i].SKILL_NAME,
+                                        text: skills[i].SKILL_NAME
+                                    }
+                                }
+                            }
+                        ]
+                    }
+                }
+                adaptiveCard.push(card);
+            }
+        }else{
+            await stepContext.context.sendActivity(`There are no skills found with '${skill_name}' in our Skill Hub.`);
+            return await stepContext.endDialog();
+        }
+        console.log("------------------------------adaptiveCard",adaptiveCard)
+        await stepContext.context.sendActivity('Please find below:');
+        // const userCard = await CardFactory.adaptiveCard(adaptiveCard[0]);
+        // const userCard1 = await CardFactory.adaptiveCard(adaptiveCard[1]);
+        // const userCard2 = await CardFactory.adaptiveCard(adaptiveCard[2]);
+        // console.log("------------------------------userCard",userCard)
+        await stepContext.context.sendActivity({ attachments: adaptiveCard, attachmentLayout: 'carousel' });
+        return await stepContext.prompt(TEXT_PROMPT, 'Please select any one skill to trigger, from above:');
+        // return await stepContext.endDialog();
+    }
+
+    async thirdStep(stepContext) {
+        console.log("skill dialog third step:",stepContext)
+        const result = stepContext.result;
+        await stepContext.context.sendActivity(`You have selected '${result}'`);
         return await stepContext.endDialog();
     }
 
     async ensureOAuth(stepContext) {
         console.log("=== console in main dialog ensureOAuth step method ===")
         await stepContext.context.sendActivity('Thank you.');
-
         const result = stepContext.result;
-        console.log("---------------------------------")
         if (result) {
-            console.log("-----------------------------------------------------------------------------------------------------------------------------------")
             // Call the prompt again because we need the token. The reasons for this are:
             // 1. If the user is already logged in we do not need to store the token locally in the bot and worry
             // about refreshing it. We can always just call the prompt again to get the token.
