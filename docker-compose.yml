@@ -1,0 +1,10 @@
+version : "2"
+
+services :
+
+  tabsso:
+    restart : always
+    image: tabsso:1.0
+    container_name  : tab-sso
+    ports :
+      - 3978:80
