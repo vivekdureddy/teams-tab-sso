@@ -1,13 +1,14 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-const { ConfirmPrompt, TextPrompt, DialogSet, DialogTurnStatus, OAuthPrompt, WaterfallDialog, ComponentDialog } = require('botbuilder-dialogs');
+const { ConfirmPrompt, TextPrompt, ChoicePrompt, ChoiceFactory, DialogSet, DialogTurnStatus, OAuthPrompt, WaterfallDialog, ComponentDialog } = require('botbuilder-dialogs');
 const { TeamsActivityHandler, ActivityTypes, MessageFactory } = require('botbuilder');
 const axios = require('axios');
 const { LogoutDialog } = require('./logoutDialog');
 
 const SKILL_DIALOG = 'SkillDialog';
 const CONFIRM_PROMPT = 'ConfirmPrompt';
+const CHOICE_PROMPT = 'ChoicePrompt';
 const TEXT_PROMPT = 'TextPrompt';
 const OAUTH_PROMPT = 'OAuthPrompt';
 const { SimpleGraphClient } = require('../simpleGraphClient');
@@ -28,6 +29,7 @@ class SkillDialog extends LogoutDialog {
             timeout: 300000
         }));
         this.addDialog(new ConfirmPrompt(CONFIRM_PROMPT));
+        this.addDialog(new ChoicePrompt(CHOICE_PROMPT));
         this.addDialog(new TextPrompt(TEXT_PROMPT));
         this.addDialog(new WaterfallDialog(SKILL_DIALOG, [
             this.firstStep.bind(this),
@@ -163,6 +165,10 @@ class SkillDialog extends LogoutDialog {
         // ]);
         await stepContext.context.sendActivity(`Please wait while we trigger the skill.`);
         await stepContext.context.sendActivity(`Skill Triggered Successfully.`);
+        await stepContext.prompt(CHOICE_PROMPT, {
+            prompt: 'Please click on \'Search a skill\' to Search for a Skill / Click on \'Logout\' to sign-out.',
+            choices: ChoiceFactory.toChoices(['Search a Skill', 'Logout'])
+        });
         return await stepContext.endDialog();
     }
 }
