@@ -1,11 +1,12 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-const { ConfirmPrompt, TextPrompt, DialogSet, DialogTurnStatus, OAuthPrompt, WaterfallDialog, ComponentDialog } = require('botbuilder-dialogs');
+const { ConfirmPrompt, ChoicePrompt, ChoiceFactory, TextPrompt, DialogSet, DialogTurnStatus, OAuthPrompt, WaterfallDialog, ComponentDialog } = require('botbuilder-dialogs');
 const { LogoutDialog } = require('./logoutDialog');
 const { SkillDialog } = require('./skillDialog');
 
 const CONFIRM_PROMPT = 'ConfirmPrompt';
+const CHOICE_PROMPT = 'ChoicePrompt';
 const TEXT_PROMPT = 'TextPrompt';
 const MAIN_DIALOG = 'MainDialog';
 const MAIN_WATERFALL_DIALOG = 'MainWaterfallDialog';
@@ -25,12 +26,13 @@ class MainDialog extends SkillDialog {
             timeout: 300000
         }));
         this.addDialog(new ConfirmPrompt(CONFIRM_PROMPT));
+        this.addDialog(new ChoicePrompt(CHOICE_PROMPT));
         this.addDialog(new TextPrompt(TEXT_PROMPT));
         this.addDialog(new WaterfallDialog(MAIN_WATERFALL_DIALOG, [
             this.promptStep.bind(this),
             this.loginStep.bind(this),
-            this.secondStep.bind(this),
-            this.thirdStep.bind(this)
+            // this.secondStep.bind(this),
+            // this.thirdStep.bind(this)
             // this.ensureOAuth.bind(this),
             // this.displayToken.bind(this)
         ]));
@@ -56,7 +58,7 @@ class MainDialog extends SkillDialog {
         const dialogContext = await dialogSet.createContext(context);
         const results = await dialogContext.continueDialog();
         console.log("results=======================================",results,context.activity)
-        if(context.activity.text.toLowerCase() == "skill"){
+        if(context.activity.text.toLowerCase() == "search a skill"){
             // await dialogContext.endDialog();
             await dialogContext.beginDialog(skillDialog.id);
         }else 
@@ -75,6 +77,8 @@ class MainDialog extends SkillDialog {
             return await stepContext.beginDialog(OAUTH_PROMPT);
         } catch (err) {
             console.error(err);
+            await stepContext.context.sendActivity("Error in fetching the token.");
+            return await stepContext.endDialog();
         }
     }
 
@@ -110,14 +114,17 @@ class MainDialog extends SkillDialog {
             try {
                 let parseToken = JSON.parse(atob(tokenResponse.token.split('.')[1]));
                 user_email = parseToken.email;
-                console.log("parsed token:",parseToken)
+                console.log("parsed token:",parseToken);
+                await stepContext.context.sendActivity(`You have been successfully logged in as '${user_email}'.`);
+                await stepContext.prompt(CHOICE_PROMPT, {
+                    prompt: 'Please click on \'Search a skill\' to Search for a Skill / Click on \'Logout\' to sign-out.',
+                    choices: ChoiceFactory.toChoices(['Search a Skill', 'Logout'])
+                });
             } catch(err) {
                 console.log("error in parse token:",err);
                 return await stepContext.endDialog();
             }
-            await stepContext.context.sendActivity(`You have been successfully logged in as '${user_email}'`);
-            return await stepContext.prompt(TEXT_PROMPT, 'Type the \'Skill\' that you want to Search for:');
-
+            // return await stepContext.prompt(TEXT_PROMPT, 'Type the \'Skill\' that you want to Search for:');
         }
         return await stepContext.endDialog();
     }
@@ -125,7 +132,7 @@ class MainDialog extends SkillDialog {
     async secondStep(stepContext) {
         console.log("skill dialog second step:",stepContext)
         const skill_name = stepContext.result;
-        await stepContext.context.sendActivity(`You have searched for '${skill_name}'`);
+        await stepContext.context.sendActivity(`You have searched for '${skill_name}'.`);
         const response = await fetch(process.env.skillUrl+"?skillname="+skill_name);
         let skills = await response.json();
         skills = skills.data.results
@@ -182,20 +189,20 @@ class MainDialog extends SkillDialog {
             return await stepContext.endDialog();
         }
         console.log("------------------------------adaptiveCard",adaptiveCard)
-        await stepContext.context.sendActivity('Please find below:');
+        await stepContext.context.sendActivity('Please find the below search results:');
         // const userCard = await CardFactory.adaptiveCard(adaptiveCard[0]);
         // const userCard1 = await CardFactory.adaptiveCard(adaptiveCard[1]);
         // const userCard2 = await CardFactory.adaptiveCard(adaptiveCard[2]);
         // console.log("------------------------------userCard",userCard)
         await stepContext.context.sendActivity({ attachments: adaptiveCard, attachmentLayout: 'carousel' });
-        return await stepContext.prompt(TEXT_PROMPT, 'Please select any one skill to trigger, from above:');
+        return await stepContext.prompt(TEXT_PROMPT, 'Click on \'Use Skill\' to trigger any skill from the above list.');
         // return await stepContext.endDialog();
     }
 
     async thirdStep(stepContext) {
         console.log("skill dialog third step:",stepContext)
         const result = stepContext.result;
-        await stepContext.context.sendActivity(`You have selected '${result}'`);
+        await stepContext.context.sendActivity(`You have selected '${result}'.`);
         return await stepContext.endDialog();
     }
 
@@ -221,7 +228,7 @@ class MainDialog extends SkillDialog {
         console.log("=== console in main dialog display token method ===")
         const tokenResponse = stepContext.result;
         if (tokenResponse && tokenResponse.token) {
-            await stepContext.context.sendActivity(`Here is your token ${tokenResponse.token}`);
+            await stepContext.context.sendActivity(`Here is your token ${tokenResponse.token}.`);
         }
         return await stepContext.endDialog();
     }

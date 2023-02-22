@@ -40,10 +40,10 @@
   "validDomains": [
     "token.botframework.com",
     "*.ngrok.io",
-    "9d52-2409-40f0-e-ea19-e1ac-ca36-83fd-ea4b.ngrok.io"
+    "supervityteams.techforce.ai"
   ],
   "webApplicationInfo": {
     "id": "40fd0a6c-3f2a-4d05-be89-fede33d659c9",
-    "resource": "api://9d52-2409-40f0-e-ea19-e1ac-ca36-83fd-ea4b.ngrok.io/40fd0a6c-3f2a-4d05-be89-fede33d659c9"
+    "resource": "api://supervityteams.techforce.ai/40fd0a6c-3f2a-4d05-be89-fede33d659c9"
   }
 }

@@ -40,7 +40,7 @@ class LogoutDialog extends ComponentDialog {
                 const { activity } = innerDc.context;
                 await userTokenClient.signOutUser(activity.from.id, this.connectionName, activity.channelId);
 
-                await innerDc.context.sendActivity('You have been signed out.');
+                await innerDc.context.sendActivity('You have been signed out successfully.');
                 return await innerDc.cancelAllDialogs();
             }
         }
