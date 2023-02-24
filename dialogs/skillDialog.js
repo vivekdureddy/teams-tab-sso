@@ -69,7 +69,7 @@ class SkillDialog extends LogoutDialog {
             console.log("=============================",parseToken);
             let user_email = parseToken.email;
             this.user_email = user_email;
-            this.orgId = parseToken.orgId;
+            // this.orgId = parseToken.orgId;
             await stepContext.context.sendActivity(`You have searched for '${skill_name}'.`);
             const response = await fetch(`${process.env.skillHubUrl}/botapi/draftSkills/retrieveDraft?skillname=${skill_name}&email=${user_email}`);
             let skills = await response.json();
@@ -118,6 +118,17 @@ class SkillDialog extends LogoutDialog {
                                             text: `${skills[i].id.toString()}_${skills[i].deviceId.toString()}`
                                         }
                                     }
+                                },
+                                {
+                                    type: "Action.Submit",
+                                    title: "Logout",
+                                    data: {
+                                        msteams: {
+                                            type: "messageBack",
+                                            displayText: "Logout",
+                                            text: "logout"
+                                        }
+                                    }
                                 }
                             ]
                         }
@@ -158,13 +169,15 @@ class SkillDialog extends LogoutDialog {
             }
         })
         console.log("===============================================",data)
-        // await stepContext.context.sendActivity([
-        //     { type: ActivityTypes.Typing },
-        //     { type: 'delay', value: 2000 },
-        //     { type: 'message', text: 'Your message here' }
-        // ]);
-        await stepContext.context.sendActivity(`Please wait while we trigger the skill.`);
+        // await stepContext.context.sendActivity(`Please wait while we trigger the skill.`);
+        await stepContext.context.sendActivities([
+            { type: ActivityTypes.Message, text: 'Please wait while we trigger the skill.' },
+            { type: 'delay', value: 6000 }
+        ]);
         await stepContext.context.sendActivity(`Skill Triggered Successfully.`);
+        await stepContext.context.sendActivities([
+            { type: 'delay', value: 2000 }
+        ]);
         await stepContext.prompt(CHOICE_PROMPT, {
             prompt: 'Please click on \'Search a skill\' to Search for a Skill / Click on \'Logout\' to sign-out.',
             choices: ChoiceFactory.toChoices(['Search a Skill', 'Logout'])
