@@ -8,3 +8,6 @@ services :
     container_name  : tab-sso
     ports :
       - 3978:80
+    environment:
+      - connectionName=TestKeycloakIDPdev
+      - skillHubUrl=https://superappbot.development.techforce.ai
