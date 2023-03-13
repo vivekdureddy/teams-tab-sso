@@ -2,13 +2,13 @@
   "$schema": "https://developer.microsoft.com/en-us/json-schemas/teams/v1.12/MicrosoftTeams.schema.json",
   "manifestVersion": "1.12",
   "version": "1.0.0",
-  "id": "40fd0a6c-3f2a-4d05-be89-fede33d659c9",
+  "id": "d852b884-8e04-4b06-92fd-cf9173d394cf",
   "packageName": "com.microsoft.teams.extension",
   "developer": {
     "name": "Techforce.ai",
-    "websiteUrl": "https://example.azurewebsites.net",
-    "privacyUrl": "https://example.azurewebsites.net/privacy",
-    "termsOfUseUrl": "https://example.azurewebsites.net/termsofuse"
+    "websiteUrl": "https://www.techforce.ai",
+    "privacyUrl": "https://www.techforce.ai/privacy-policy",
+    "termsOfUseUrl": "https://www.techforce.ai/privacy-policy"
   },
   "icons": {
     "color": "color.png",
@@ -25,7 +25,7 @@
   "accentColor": "#FFFFFF",
   "bots": [
     {
-      "botId": "40fd0a6c-3f2a-4d05-be89-fede33d659c9",
+      "botId": "d852b884-8e04-4b06-92fd-cf9173d394cf",
       "scopes": [
         "personal"
       ],
@@ -43,7 +43,7 @@
     "supervityteams.techforce.ai"
   ],
   "webApplicationInfo": {
-    "id": "40fd0a6c-3f2a-4d05-be89-fede33d659c9",
-    "resource": "api://supervityteams.techforce.ai/40fd0a6c-3f2a-4d05-be89-fede33d659c9"
+    "id": "d852b884-8e04-4b06-92fd-cf9173d394cf",
+    "resource": "api://supervityteams.techforce.ai/d852b884-8e04-4b06-92fd-cf9173d394cf"
   }
 }
