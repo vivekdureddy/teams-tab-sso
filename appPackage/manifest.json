@@ -15,12 +15,12 @@
     "outline": "outline.png"
   },
   "name": {
-    "short": "Supervity Bot",
-    "full": "Supervity Bot"
+    "short": "Supervity",
+    "full": "Supervity"
   },
   "description": {
-    "short": "Short description for Conversation Bot.",
-    "full": "Full description of Conversation Bot."
+    "short": "Supervity app for Microsoft Teams helps you become more productive than ever.",
+    "full": "Supervity app helps you become more productive than ever by helping what you do manually automate with simple steps and no/low code approach."
   },
   "accentColor": "#FFFFFF",
   "bots": [
@@ -33,13 +33,15 @@
       "isNotificationOnly": false
     }
   ],
+  "subscriptionOffer": {
+    "offerId": "digitamizeinc.supervity"
+  },
   "permissions": [
     "identity",
     "messageTeamMembers"
   ],
   "validDomains": [
     "token.botframework.com",
-    "*.ngrok.io",
     "supervityteams.techforce.ai"
   ],
   "webApplicationInfo": {

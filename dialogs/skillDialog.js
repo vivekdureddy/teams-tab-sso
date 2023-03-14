@@ -136,7 +136,11 @@ class SkillDialog extends LogoutDialog {
                     adaptiveCard.push(card);
                 }
             }else{
-                await stepContext.context.sendActivity(`There are no skills found with '${skill_name}' in our Skill Hub.`);
+                await stepContext.prompt(CHOICE_PROMPT, {
+                    prompt: 'Please click on \'Search a skill\' to Search for a Skill / Click on \'Logout\' to sign-out.',
+                    choices: ChoiceFactory.toChoices(['Search a Skill', 'Logout'])
+                });
+                // await stepContext.context.sendActivity(`There are no skills found with '${skill_name}' in our Skill Hub.`);
                 return await stepContext.endDialog();
             }
             console.log("------------------------------adaptiveCard",adaptiveCard)
