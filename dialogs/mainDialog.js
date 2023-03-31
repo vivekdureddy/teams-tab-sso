@@ -130,8 +130,8 @@ class MainDialog extends SkillDialog {
             }
             const userCard = await CardFactory.adaptiveCard(adaptiveCard);
             // await context.sendActivity({ attachments: [userCard], attachmentLayout: 'carousel' });
-            await context.sendActivity("Message not recognized. Please type login.");
-            return await dialogContext.endDialog();
+            // await context.sendActivity("Message not recognized. Please type login.");
+            // return await dialogContext.endDialog();
         }
         console.log("--------------------------results",results,"================================Dialog",DialogTurnStatus)
         // else if(results.status === DialogTurnStatus.empty){
