@@ -22,7 +22,7 @@ class MainDialog extends SkillDialog {
         this.addDialog(new OAuthPrompt(OAUTH_PROMPT, {
             connectionName: process.env.connectionName,
             text: 'Please Sign In',
-            title: 'Sign In',
+            title: 'Sign in',
             timeout: 300000
         }));
         this.addDialog(new ConfirmPrompt(CONFIRM_PROMPT));
@@ -57,14 +57,83 @@ class MainDialog extends SkillDialog {
         dialogSet.add(skillDialog);
         const dialogContext = await dialogSet.createContext(context);
         const results = await dialogContext.continueDialog();
+        // const conversationData = await this.conversationDataAccessor.get(
+        //     turnContext, { promptedForUserName: false });
+        // console.log("=========================================================conversationData",conversationData)
         console.log("results=======================================",results,context.activity)
         if(context.activity.text.toLowerCase() == "search a skill"){
             // await dialogContext.endDialog();
-            await dialogContext.beginDialog(skillDialog.id);
+            return await dialogContext.beginDialog(skillDialog.id);
         }else 
-        if (results.status === DialogTurnStatus.empty) {
-            await dialogContext.beginDialog(this.id);
+        if(results.status === DialogTurnStatus.empty) {
+            if(context.activity.text.toLowerCase() == "sign in" || context.activity.text.toLowerCase() == "sign out" || context.activity.text.toLowerCase() == "help" || context.activity.text.toLowerCase() == "sign in " || context.activity.text.toLowerCase() == "sign out " || context.activity.text.toLowerCase() == "help "){
+                await dialogContext.beginDialog(this.id);
+            }
+            else{
+                console.log("1111111111111111111!!!!!!121111!!!!!")
+                let adaptiveCard = {
+                    "type": "AdaptiveCard",
+                    "body": [
+                        {
+                            "type": "TextBlock",
+                            "text": "Oops, I didn't understand that. Here are some things you can do.",
+                            "wrap": true,
+                            "spacing": "Medium"
+                        },
+                        {
+                            "type": "TextBlock",
+                            "text": "- Type Sign in to connect your Supervity and Microsoft Teams accounts \r- Type Sign out to disconnect your Supervity and Microsoft Teams accounts \r- Type Help to see this message again",
+                            "wrap": true,
+                            "spacing": "Small"
+                        },
+                        {
+                            "type": "TextBlock",
+                            "text": "New to Supervity? Learn more at [Techforce.ai](https://www.techforce.ai)",
+                            "wrap": true,
+                            "spacing": "Medium"
+                        }
+                    ],
+                    "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+                    "version": "1.5"
+                }
+                const userCard = await CardFactory.adaptiveCard(adaptiveCard);
+                await context.sendActivity({ attachments: [userCard], attachmentLayout: 'carousel' });
+                // await context.sendActivity("Message not recognized. Please type login.");
+                return await dialogContext.endDialog();
+            }
+        }else if(results.status === 'waiting'){
+            console.log("22222222222222222222222222222222")
+            let adaptiveCard = {
+                "type": "AdaptiveCard",
+                "body": [
+                    {
+                        "type": "TextBlock",
+                        "text": "Oops, I didn't understand that. Here are some things you can do.",
+                        "wrap": true,
+                        "spacing": "Medium"
+                    },
+                    {
+                        "type": "TextBlock",
+                        "text": "- Type Sign in to connect your Supervity and Microsoft Teams accounts \r- Type Sign out to disconnect your Supervity and Microsoft Teams accounts \r- Type Help to see this message again",
+                        "wrap": true,
+                        "spacing": "Small"
+                    },
+                    {
+                        "type": "TextBlock",
+                        "text": "New to Supervity? Learn more at [Techforce.ai](https://www.techforce.ai)",
+                        "wrap": true,
+                        "spacing": "Medium"
+                    }
+                ],
+                "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+                "version": "1.5"
+            }
+            const userCard = await CardFactory.adaptiveCard(adaptiveCard);
+            // await context.sendActivity({ attachments: [userCard], attachmentLayout: 'carousel' });
+            await context.sendActivity("Message not recognized. Please type login.");
+            return await dialogContext.endDialog();
         }
+        console.log("--------------------------results",results,"================================Dialog",DialogTurnStatus)
         // else if(results.status === DialogTurnStatus.empty){
         //     await context.sendActivity('Welcome to Supervity Bot. Please type \'login\' to sign-in. Type \'logout\' to sign-out.');
         // }
@@ -117,8 +186,8 @@ class MainDialog extends SkillDialog {
                 console.log("parsed token:",parseToken);
                 await stepContext.context.sendActivity(`You have been successfully logged in as '${user_email}'.`);
                 await stepContext.prompt(CHOICE_PROMPT, {
-                    prompt: 'Please click on \'Search a skill\' to Search for a Skill / Click on \'Logout\' to sign-out.',
-                    choices: ChoiceFactory.toChoices(['Search a Skill', 'Logout'])
+                    prompt: 'Please click on \'Search a skill\' to Search for a Skill / click on \'Sign out\' to sign-out.',
+                    choices: ChoiceFactory.toChoices(['Search a Skill', 'Sign out'])
                 });
             } catch(err) {
                 console.log("error in parse token:",err);

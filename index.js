@@ -69,6 +69,7 @@ adapter.onTurnError = async (context, error) => {
 //const memoryStorage = new MemoryStorage();
 
 // Create conversation and user state with in-memory storage provider.
+// global.conversationState = new ConversationState(memoryStorage);
 const conversationState = new ConversationState(memoryStorage);
 const userState = new UserState(memoryStorage);
 

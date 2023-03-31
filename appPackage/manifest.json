@@ -2,13 +2,14 @@
   "$schema": "https://developer.microsoft.com/en-us/json-schemas/teams/v1.12/MicrosoftTeams.schema.json",
   "manifestVersion": "1.12",
   "version": "1.0.0",
-  "id": "d852b884-8e04-4b06-92fd-cf9173d394cf",
+  "id": "b02ad8df-f69b-4678-92b8-d6807ad71391",
   "packageName": "com.microsoft.teams.extension",
   "developer": {
-    "name": "Techforce.ai",
+    "name": "Digitamize Inc",
+    "mpnId": "5037662",
     "websiteUrl": "https://www.techforce.ai",
     "privacyUrl": "https://www.techforce.ai/privacy-policy",
-    "termsOfUseUrl": "https://www.techforce.ai/privacy-policy"
+    "termsOfUseUrl": "https://www.techforce.ai/terms-of-service"
   },
   "icons": {
     "color": "color.png",
@@ -19,15 +20,36 @@
     "full": "Supervity"
   },
   "description": {
-    "short": "Supervity app for Microsoft Teams helps you become more productive than ever.",
-    "full": "Supervity app helps you become more productive than ever by helping what you do manually automate with simple steps and no/low code approach."
+    "short": "Supervity for Microsoft Teams helps you become more productive than ever.",
+    "full": "Supervity is citizen automation platform to create, share and use digital skills. \nSupervity comes with a Skill Hub that acts as a global repository of skills created by Subject Matter Experts (SMEs) & Star Creators across popular software applications.The Supervity app for Microsoft Teams allows users to do the following tasks: \n - Search for the skills in Supervity Skill Hub \n- Select and trigger the digital skill \n- Takes care of routine work heavily dominated by repetitive tasks \n- Enables faster adoption of software applications by automating tasks in minutes \nSome helpful commands: \n- Type Sign in to connect your Supervity and Microsoft Teams accounts \n- Type Sign out to disconnect your Supervity and Microsoft Teams accounts \n- Type Help to see this message again"
   },
   "accentColor": "#FFFFFF",
   "bots": [
     {
-      "botId": "d852b884-8e04-4b06-92fd-cf9173d394cf",
+      "botId": "b02ad8df-f69b-4678-92b8-d6807ad71391",
       "scopes": [
         "personal"
+      ],
+      "commandLists":[
+        {
+          "scopes":[
+            "personal"
+          ],
+          "commands":[
+            {
+              "title":"Sign in",
+              "description":"Log in or create a Supervity account"
+            },
+            {
+              "title":"Sign out",
+              "description":"Log out of Supervity account"
+            },
+            {
+              "title":"Help",
+              "description":"Show all supported commands"
+            }
+          ]
+        }
       ],
       "supportsFiles": false,
       "isNotificationOnly": false
@@ -45,7 +67,7 @@
     "supervityteams.techforce.ai"
   ],
   "webApplicationInfo": {
-    "id": "d852b884-8e04-4b06-92fd-cf9173d394cf",
-    "resource": "api://supervityteams.techforce.ai/d852b884-8e04-4b06-92fd-cf9173d394cf"
+    "id": "b02ad8df-f69b-4678-92b8-d6807ad71391",
+    "resource": "api://supervityteams.techforce.ai/b02ad8df-f69b-4678-92b8-d6807ad71391"
   }
 }

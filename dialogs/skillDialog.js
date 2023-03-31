@@ -121,12 +121,12 @@ class SkillDialog extends LogoutDialog {
                                 },
                                 {
                                     type: "Action.Submit",
-                                    title: "Logout",
+                                    title: "Sign out",
                                     data: {
                                         msteams: {
                                             type: "messageBack",
-                                            displayText: "Logout",
-                                            text: "logout"
+                                            displayText: "Sign out",
+                                            text: "Sign out"
                                         }
                                     }
                                 }
@@ -138,12 +138,18 @@ class SkillDialog extends LogoutDialog {
             }else{
                 await stepContext.context.sendActivity(`There are no skills found with '${skill_name}' in our Skill Hub.`);
                 await stepContext.prompt(CHOICE_PROMPT, {
-                    prompt: 'Please click on \'Search a skill\' to Search for a Skill / Click on \'Logout\' to sign-out.',
-                    choices: ChoiceFactory.toChoices(['Search a Skill', 'Logout'])
+                    prompt: 'Please click on \'Search a skill\' to Search for a Skill / click on \'Sign out\' to sign-out.',
+                    choices: ChoiceFactory.toChoices(['Search a Skill', 'Sign out'])
                 });
                 return await stepContext.endDialog();
             }
             console.log("------------------------------adaptiveCard",adaptiveCard)
+            // const CONVERSATION_DATA_PROPERTY = "CONVERSATION_DATA_PROPERTY";
+            // this.conversationDataAccessor = conversationState.createProperty(CONVERSATION_DATA_PROPERTY);
+            // const conversationData = await this.conversationDataAccessor.get(
+            //     stepContext.context, {});
+            // conversationData.searchMode = true;
+            // conversationState.saveChanges(stepContext.context, false);
             await stepContext.context.sendActivity('Please find the below search results:');
             // const userCard = await CardFactory.adaptiveCard(adaptiveCard[0]);
             // const userCard1 = await CardFactory.adaptiveCard(adaptiveCard[1]);
@@ -183,8 +189,8 @@ class SkillDialog extends LogoutDialog {
             { type: 'delay', value: 2000 }
         ]);
         await stepContext.prompt(CHOICE_PROMPT, {
-            prompt: 'Please click on \'Search a skill\' to Search for a Skill / Click on \'Logout\' to sign-out.',
-            choices: ChoiceFactory.toChoices(['Search a Skill', 'Logout'])
+            prompt: 'Please click on \'Search a skill\' to Search for a Skill / Click on \'Sign out\' to sign-out.',
+            choices: ChoiceFactory.toChoices(['Search a Skill', 'Sign out'])
         });
         return await stepContext.endDialog();
     }
