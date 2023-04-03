@@ -118,18 +118,18 @@ class SkillDialog extends LogoutDialog {
                                             text: `${skills[i].id.toString()}_${skills[i].deviceId.toString()}`
                                         }
                                     }
-                                },
-                                {
-                                    type: "Action.Submit",
-                                    title: "Sign out",
-                                    data: {
-                                        msteams: {
-                                            type: "messageBack",
-                                            displayText: "Sign out",
-                                            text: "Sign out"
-                                        }
-                                    }
                                 }
+                                // {
+                                //     type: "Action.Submit",
+                                //     title: "Sign out",
+                                //     data: {
+                                //         msteams: {
+                                //             type: "messageBack",
+                                //             displayText: "Sign out",
+                                //             text: "Sign out"
+                                //         }
+                                //     }
+                                // }
                             ]
                         }
                     }
@@ -150,13 +150,54 @@ class SkillDialog extends LogoutDialog {
             //     stepContext.context, {});
             // conversationData.searchMode = true;
             // conversationState.saveChanges(stepContext.context, false);
-            await stepContext.context.sendActivity('Please find the below search results:');
+            // await stepContext.context.sendActivity('Please find the below search results:');
             // const userCard = await CardFactory.adaptiveCard(adaptiveCard[0]);
             // const userCard1 = await CardFactory.adaptiveCard(adaptiveCard[1]);
             // const userCard2 = await CardFactory.adaptiveCard(adaptiveCard[2]);
             // console.log("------------------------------userCard",userCard)
+            await stepContext.context.sendActivity('Click on \'Use Skill\' to trigger any skill from the above list.');
             await stepContext.context.sendActivity({ attachments: adaptiveCard, attachmentLayout: 'carousel' });
-            return await stepContext.prompt(TEXT_PROMPT, 'Click on \'Use Skill\' to trigger any skill from the above list.');
+            // await stepContext.prompt(TEXT_PROMPT, 'Click on \'Use Skill\' to trigger any skill from the above list. If you are not satisfied with the above results and trying to search for a new skill, then please follow the card below:');
+            let adaptiveCard1 = {
+                "type": "AdaptiveCard",
+                "body": [
+                    {
+                        type: "TextBlock",
+                        size: "Medium",
+                        text: 'Please click on \'Search a skill\' to Search for a Skill / click on \'Sign out\' to sign-out.',
+                        wrap: true
+                    }
+                ],
+                "actions": [
+                    {
+                        type: "Action.Submit",
+                        title: "Search a Skill",
+                        data: {
+                            msteams: {
+                                type: "messageBack",
+                                displayText: "Search a Skill",
+                                text: "Search a Skill"
+                            }
+                        }
+                    },
+                    {
+                        type: "Action.Submit",
+                        title: "Sign out",
+                        data: {
+                            msteams: {
+                                type: "messageBack",
+                                displayText: "Sign out",
+                                text: "Sign out"
+                            }
+                        }
+                    }
+                ],
+                "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+                "version": "1.5"
+            }
+            const userCard1 = await CardFactory.adaptiveCard(adaptiveCard1);
+            await stepContext.context.sendActivity({ attachments: [userCard1] });
+            return await stepContext.prompt(TEXT_PROMPT, 'Above are some other things you can do.');
             // return await stepContext.endDialog();
         } catch(err) {
             console.log("error in parse token:",err);
@@ -165,8 +206,12 @@ class SkillDialog extends LogoutDialog {
     }
 
     async thirdStep(stepContext) {
-        console.log("skill dialog third step:",typeof this.device_id);
+        console.log("skill dialog third step:",stepContext.result);
         const result = stepContext.result;
+        if(result.toLowerCase() === 'search a skill'){
+            console.log("--------------------------------------------okok")
+            return await stepContext.endDialog();
+        }
         let { data } = await axios.post(`${process.env.skillHubUrl}/botapi/draftSkills/extension/execute`,{
             skillId: parseInt(result.split("_")[0]),
             deviceId: parseInt(result.split("_")[1]), 

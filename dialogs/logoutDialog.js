@@ -85,7 +85,7 @@ class LogoutDialog extends ComponentDialog {
                         },
                         {
                             "type": "TextBlock",
-                            "text": "- Type Sign in to connect your Supervity and Microsoft Teams accounts \r- Type Sign out to disconnect your Supervity and Microsoft Teams accounts \r- Type Help to see this message again",
+                            "text": "- Type **Sign in** to connect your Supervity and Microsoft Teams accounts \r- Type **Sign out** to disconnect your Supervity and Microsoft Teams accounts \r- Type **Help** to see this message again",
                             "wrap": true,
                             "spacing": "Small"
                         },

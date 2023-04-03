@@ -62,7 +62,7 @@ class MainDialog extends SkillDialog {
         // console.log("=========================================================conversationData",conversationData)
         console.log("results=======================================",results,context.activity)
         if(context.activity.text.toLowerCase() == "search a skill"){
-            // await dialogContext.endDialog();
+            await dialogContext.endDialog();
             return await dialogContext.beginDialog(skillDialog.id);
         }else 
         if(results.status === DialogTurnStatus.empty) {
@@ -82,7 +82,7 @@ class MainDialog extends SkillDialog {
                         },
                         {
                             "type": "TextBlock",
-                            "text": "- Type Sign in to connect your Supervity and Microsoft Teams accounts \r- Type Sign out to disconnect your Supervity and Microsoft Teams accounts \r- Type Help to see this message again",
+                            "text": "- Type **Sign in** to connect your Supervity and Microsoft Teams accounts \r- Type **Sign out** to disconnect your Supervity and Microsoft Teams accounts \r- Type **Help** to see this message again",
                             "wrap": true,
                             "spacing": "Small"
                         },
@@ -114,7 +114,7 @@ class MainDialog extends SkillDialog {
                     },
                     {
                         "type": "TextBlock",
-                        "text": "- Type Sign in to connect your Supervity and Microsoft Teams accounts \r- Type Sign out to disconnect your Supervity and Microsoft Teams accounts \r- Type Help to see this message again",
+                        "text": "- Type **Sign in** to connect your Supervity and Microsoft Teams accounts \r- Type **Sign out** to disconnect your Supervity and Microsoft Teams accounts \r- Type **Help** to see this message again",
                         "wrap": true,
                         "spacing": "Small"
                     },
