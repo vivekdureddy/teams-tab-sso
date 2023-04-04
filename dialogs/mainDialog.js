@@ -21,7 +21,7 @@ class MainDialog extends SkillDialog {
 
         this.addDialog(new OAuthPrompt(OAUTH_PROMPT, {
             connectionName: process.env.connectionName,
-            text: 'Please Sign In',
+            text: 'Sign in with Supervity',
             title: 'Sign in',
             timeout: 300000
         }));
@@ -145,7 +145,8 @@ class MainDialog extends SkillDialog {
         console.log("=== console in main dialog prompt step method ===")
         try {
             await stepContext.context.sendActivity("Initiating Login Process...");
-            return await stepContext.beginDialog(OAUTH_PROMPT);
+            await stepContext.context.sendActivity("Note: Clicking on “Sign in” will take users outside the Teams App.");
+            return await stepContext.beginDialog(OAUTH_PROMPT); 
         } catch (err) {
             console.error(err);
             await stepContext.context.sendActivity("Error in fetching the token.");

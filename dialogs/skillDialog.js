@@ -24,7 +24,7 @@ class SkillDialog extends LogoutDialog {
         this.device_id = 0;
         this.addDialog(new OAuthPrompt(OAUTH_PROMPT, {
             connectionName: process.env.connectionName,
-            text: 'Please Sign In',
+            text: 'Sign in with Supervity',
             title: 'Sign In',
             timeout: 300000
         }));
