@@ -103,35 +103,37 @@ class MainDialog extends SkillDialog {
             }
         }else if(results.status === 'waiting'){
             console.log("22222222222222222222222222222222")
-            let adaptiveCard = {
-                "type": "AdaptiveCard",
-                "body": [
-                    {
-                        "type": "TextBlock",
-                        "text": "Oops, I didn't understand that. Here are some things you can do.",
-                        "wrap": true,
-                        "spacing": "Medium"
-                    },
-                    {
-                        "type": "TextBlock",
-                        "text": "- Type **Sign in** to connect your Supervity and Microsoft Teams accounts \r- Type **Sign out** to disconnect your Supervity and Microsoft Teams accounts \r- Type **Help** to see this message again",
-                        "wrap": true,
-                        "spacing": "Small"
-                    },
-                    {
-                        "type": "TextBlock",
-                        "text": "New to Supervity? Learn more at [Techforce.ai](https://www.techforce.ai)",
-                        "wrap": true,
-                        "spacing": "Medium"
-                    }
-                ],
-                "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
-                "version": "1.5"
+            if(context.activity.text.toLowerCase() !== "submit"){
+                let adaptiveCard = {
+                    "type": "AdaptiveCard",
+                    "body": [
+                        {
+                            "type": "TextBlock",
+                            "text": "Oops, I didn't understand that. Here are some things you can do.",
+                            "wrap": true,
+                            "spacing": "Medium"
+                        },
+                        {
+                            "type": "TextBlock",
+                            "text": "- Type **Sign in** to connect your Supervity and Microsoft Teams accounts \r- Type **Sign out** to disconnect your Supervity and Microsoft Teams accounts \r- Type **Help** to see this message again",
+                            "wrap": true,
+                            "spacing": "Small"
+                        },
+                        {
+                            "type": "TextBlock",
+                            "text": "New to Supervity? Learn more at [Techforce.ai](https://www.techforce.ai)",
+                            "wrap": true,
+                            "spacing": "Medium"
+                        }
+                    ],
+                    "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+                    "version": "1.5"
+                }
+                const userCard = await CardFactory.adaptiveCard(adaptiveCard);
+                await context.sendActivity({ attachments: [userCard], attachmentLayout: 'carousel' });
+                // await context.sendActivity("Message not recognized. Please type login.");
+                return await dialogContext.endDialog();
             }
-            const userCard = await CardFactory.adaptiveCard(adaptiveCard);
-            // await context.sendActivity({ attachments: [userCard], attachmentLayout: 'carousel' });
-            // await context.sendActivity("Message not recognized. Please type login.");
-            // return await dialogContext.endDialog();
         }
         console.log("--------------------------results",results,"================================Dialog",DialogTurnStatus)
         // else if(results.status === DialogTurnStatus.empty){

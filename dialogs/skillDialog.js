@@ -42,14 +42,79 @@ class SkillDialog extends LogoutDialog {
     }
 
     async firstStep(stepContext) {
+        let adaptiveCard = {
+            "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+            "type": "AdaptiveCard",
+            "version": "1.0",
+            "body": [
+                // {
+                //     "type": "TextBlock",
+                //     "text": "Type the Skill name that you want to Search for:"
+                // },
+                {
+                    "type": "Input.Text",
+                    "id": "skillInputId",
+                    "placeholder": "Search for the Skill here",
+                    "maxLength": 500
+                }
+            ],
+            "actions": [
+                {
+                    "type": "Action.Submit",
+                    "title": "Submit",
+                    "data": {
+                        "msteams": {
+                            type: "messageBack",
+                            displayText: "Submit",
+                            text: "Submit"
+                        }
+                    }
+
+                }
+            ]
+        }
+        const userCard = await CardFactory.adaptiveCard(adaptiveCard);
+        await stepContext.context.sendActivity({ attachments: [userCard] });
         // return await stepContext.context.sendActivity(MessageFactory.text('Hello, Type the skill name that you want to Search for:'));
         // return await stepContext.prompt(CONFIRM_PROMPT, 'Hello, Type the skill name that you want to Search for:');
-        return await stepContext.prompt(TEXT_PROMPT, 'Type the Skill name that you want to Search for:');
+        return await stepContext.prompt(TEXT_PROMPT, 'Type the Skill name that you want to Search for in the above card.');
     }
 
     async fetchEmail(stepContext) {
-        console.log("=== console in skill dialog fetch email method ===",this.skill_name);
-        let skill_name = stepContext.result;
+        console.log("=== console in skill dialog fetch email method ===",stepContext.context);
+        let skill_name;
+        if(stepContext.context._activity.value){
+            skill_name = stepContext.context._activity.value.skillInputId;
+        }else{
+            let adaptiveCard = {
+                "type": "AdaptiveCard",
+                "body": [
+                    {
+                        "type": "TextBlock",
+                        "text": "Oops, I didn't understand that. Here are some things you can do.",
+                        "wrap": true,
+                        "spacing": "Medium"
+                    },
+                    {
+                        "type": "TextBlock",
+                        "text": "- Type **Sign in** to connect your Supervity and Microsoft Teams accounts \r- Type **Sign out** to disconnect your Supervity and Microsoft Teams accounts \r- Type **Help** to see this message again",
+                        "wrap": true,
+                        "spacing": "Small"
+                    },
+                    {
+                        "type": "TextBlock",
+                        "text": "New to Supervity? Learn more at [Techforce.ai](https://www.techforce.ai)",
+                        "wrap": true,
+                        "spacing": "Medium"
+                    }
+                ],
+                "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+                "version": "1.5"
+            }
+            const userCard = await CardFactory.adaptiveCard(adaptiveCard);
+            await stepContext.context.sendActivity({ attachments: [userCard] });
+            return await stepContext.endDialog();
+        }
         this.skill_name = skill_name;
         try {
             return await stepContext.beginDialog(OAUTH_PROMPT);
@@ -155,7 +220,7 @@ class SkillDialog extends LogoutDialog {
             // const userCard1 = await CardFactory.adaptiveCard(adaptiveCard[1]);
             // const userCard2 = await CardFactory.adaptiveCard(adaptiveCard[2]);
             // console.log("------------------------------userCard",userCard)
-            await stepContext.context.sendActivity('Click on \'Use Skill\' to trigger any skill from the above list.');
+            await stepContext.context.sendActivity('Click on \'Use Skill\' to trigger any skill from the below list. Also ensure that you installed the Supervity prerequisites. Click [here](https://digitamize-my.sharepoint.com/:v:/g/personal/vj_techforce_ai/EdIpTRkI3qlNqjfHZum_flABRwCc57BEQMCG6bsrgirpjw?e=96iIvc) to watch a demo video on how to install Supervity prerequisites.');
             await stepContext.context.sendActivity({ attachments: adaptiveCard, attachmentLayout: 'carousel' });
             // await stepContext.prompt(TEXT_PROMPT, 'Click on \'Use Skill\' to trigger any skill from the above list. If you are not satisfied with the above results and trying to search for a new skill, then please follow the card below:');
             let adaptiveCard1 = {
@@ -164,7 +229,7 @@ class SkillDialog extends LogoutDialog {
                     {
                         type: "TextBlock",
                         size: "Medium",
-                        text: 'Please click on \'Search a skill\' to Search for a Skill / click on \'Sign out\' to sign-out.',
+                        text: 'If you want to search for more skills, Please click on \'Search a skill\' to Search for a Skill / click on \'Sign out\' to sign-out.',
                         wrap: true
                     }
                 ],
@@ -225,6 +290,14 @@ class SkillDialog extends LogoutDialog {
         })
         console.log("===============================================",data)
         // await stepContext.context.sendActivity(`Please wait while we trigger the skill.`);
+        if(data.status == "failed"){
+            await stepContext.context.sendActivity(`Sorry we couldn't trigger the skill.`);
+            await stepContext.prompt(CHOICE_PROMPT, {
+                prompt: 'If you want to search for more skills, Please click on \'Search a skill\' to Search for a Skill / Click on \'Sign out\' to sign-out.',
+                choices: ChoiceFactory.toChoices(['Search a Skill', 'Sign out'])
+            });
+            return await stepContext.endDialog();
+        }
         await stepContext.context.sendActivities([
             { type: ActivityTypes.Message, text: 'Please wait while we trigger the skill.' },
             { type: 'delay', value: 6000 }
