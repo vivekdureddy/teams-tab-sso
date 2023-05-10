@@ -197,6 +197,7 @@ class MainDialog extends SkillDialog {
                 let parseToken = JSON.parse(atob(tokenResponse.token.split('.')[1]));
                 user_email = parseToken.email;
                 global.user_email = user_email;
+                global.orgId = parseToken.orgId;
                 console.log("parsed token:",parseToken);
                 await stepContext.context.sendActivity(`You have been successfully logged in as '${user_email}'.`);
                 const response = await fetch(`${process.env.skillHubUrl}/botapi/draftSkills/retrieveMostPopularSkill?category=all&page=1&pageSize=10`);
@@ -359,7 +360,7 @@ class MainDialog extends SkillDialog {
                     "type": "executeSkill",
                     "skillId": `${parseInt(result)}`,
                     "source": "teamsBot",
-                    "orgId": "119",
+                    "orgId": global.orgId,
                     "deviceId": `${data.fcmList.id}`,
                     "variables": ""
                 },
