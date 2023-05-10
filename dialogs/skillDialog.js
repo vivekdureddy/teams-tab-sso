@@ -15,13 +15,21 @@ const { SimpleGraphClient } = require('../simpleGraphClient');
 const { polyfills } = require('isomorphic-fetch');
 const { CardFactory } = require('botbuilder-core');
 
+// const { applicationDefault, initializeApp } = require("firebase-admin/app");
+const { getMessaging } = require("firebase-admin/messaging");
+
+// initializeApp({
+//     credential: applicationDefault()
+// })
+
 class SkillDialog extends LogoutDialog {
     constructor() {
         super(SKILL_DIALOG, process.env.connectionName);
-        this.skill_name = '';
-        this.user_email = '';
-        this.orgId = 0;
-        this.device_id = 0;
+        // this.skill_name = '';
+        // this.user_email = '';
+        // this.orgId = 0;
+        // this.device_id = 0;
+        // this.token = '';
         this.addDialog(new OAuthPrompt(OAUTH_PROMPT, {
             connectionName: process.env.connectionName,
             text: 'Sign in with Supervity',
@@ -115,7 +123,7 @@ class SkillDialog extends LogoutDialog {
             await stepContext.context.sendActivity({ attachments: [userCard] });
             return await stepContext.endDialog();
         }
-        this.skill_name = skill_name;
+        global.skill_name = skill_name;
         try {
             return await stepContext.beginDialog(OAUTH_PROMPT);
         } catch (err) {
@@ -127,16 +135,17 @@ class SkillDialog extends LogoutDialog {
 
     async secondStep(stepContext) {
         console.log("skill dialog second step:",stepContext);
-        let skill_name = this.skill_name;
+        let skill_name = global.skill_name;
         try{
             let tokenResponse = stepContext.result;
+            global.token = tokenResponse.token;
             let parseToken = JSON.parse(atob(tokenResponse.token.split('.')[1]));
             console.log("=============================",parseToken);
             let user_email = parseToken.email;
-            this.user_email = user_email;
-            // this.orgId = parseToken.orgId;
+            global.user_email = user_email;
+            global.orgId = parseToken.orgId;
             await stepContext.context.sendActivity(`You have searched for '${skill_name}'.`);
-            const response = await fetch(`${process.env.skillHubUrl}/botapi/draftSkills/retrieveDraft?skillname=${skill_name}&email=${user_email}`);
+            const response = await fetch(`${process.env.skillHubUrl}/botapi/draftSkills/retrieveDraftByName?skillname=${skill_name}&email=${user_email}`);
             let skills = await response.json();
             skills = skills.data.results;
             console.log("============================================================",skills,skill_name,user_email)
@@ -144,7 +153,7 @@ class SkillDialog extends LogoutDialog {
             if(skills.length){
                 skills = skills.length > 9 ? skills.splice(0, 10) : skills;
                 console.log("-----------------------------------------------------",skills[0])
-                this.device_id = skills[0].deviceId;
+                global.device_id = skills[0].deviceId;
                 for(let i=0; i<skills.length; ++i){
                     let card = {
                         contentType: "application/vnd.microsoft.card.adaptive",
@@ -273,22 +282,31 @@ class SkillDialog extends LogoutDialog {
     async thirdStep(stepContext) {
         console.log("skill dialog third step:",stepContext.result);
         const result = stepContext.result;
+        let tokenResponse = await stepContext.beginDialog(OAUTH_PROMPT);
+        console.log("==================================----------------------",tokenResponse)
         if(result.toLowerCase() === 'search a skill'){
-            console.log("--------------------------------------------okok")
             return await stepContext.endDialog();
         }
-        let { data } = await axios.post(`${process.env.skillHubUrl}/botapi/draftSkills/extension/execute`,{
-            skillId: parseInt(result.split("_")[0]),
-            deviceId: parseInt(result.split("_")[1]), 
-            orgId: 87, 
-            bulk: true
-        },{
+        let user_email = global.user_email;
+        console.log("--------------------------------------------global",global)
+        let { data } = await axios.get(`${process.env.skillHubUrl}/botapi/fcm?email=${user_email}`,{
             headers: {
-                "X-API-TOKEN": '8fd28b05d243fe1c753646f8',
-                "X-API-ORG": 87
+                Authorization: `Bearer ${tokenResponse.result.token}`
             }
-        })
-        console.log("===============================================",data)
+        });
+        console.log("----------------------------okokok",data);
+
+        // let { data } = await axios.post(`${process.env.skillHubUrl}/botapi/draftSkills/extension/execute`,{
+        //     skillId: parseInt(result.split("_")[0]),
+        //     deviceId: parseInt(result.split("_")[1]), 
+        //     orgId: 87, 
+        //     bulk: true
+        // },{
+        //     headers: {
+        //         "X-API-TOKEN": '8fd28b05d243fe1c753646f8',
+        //         "X-API-ORG": 87
+        //     }
+        // })
         // await stepContext.context.sendActivity(`Please wait while we trigger the skill.`);
         if(data.status == "failed"){
             await stepContext.context.sendActivity(`Sorry we couldn't trigger the skill.`);
@@ -297,6 +315,20 @@ class SkillDialog extends LogoutDialog {
                 choices: ChoiceFactory.toChoices(['Search a Skill', 'Sign out'])
             });
             return await stepContext.endDialog();
+        }
+        if(data.status){
+            const res = await getMessaging().send({
+                data: {
+                    "type": "executeSkill",
+                    "skillId": `${parseInt(result.split("_")[0])}`,
+                    "source": "teamsBot",
+                    "orgId": "119",
+                    "deviceId": `${data.fcmList.id}`,
+                    "variables": ""
+                },
+                token: data.fcmList.registration_token
+            })
+            console.log("=======================================res",res)
         }
         await stepContext.context.sendActivities([
             { type: ActivityTypes.Message, text: 'Please wait while we trigger the skill.' },

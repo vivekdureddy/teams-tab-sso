@@ -11,6 +11,11 @@ const ENV_FILE = path.join(__dirname, '.env');
 require('dotenv').config({ path: ENV_FILE });
 
 const restify = require('restify');
+global.user_email = '';
+global.skill_name = '';
+global.orgId = 0;
+global.device_id = 0;
+global.token = '';
 
 // Import required bot services.
 // See https://aka.ms/bot-services to learn more about the different parts of a bot.
