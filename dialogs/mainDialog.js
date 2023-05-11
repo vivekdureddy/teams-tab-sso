@@ -210,6 +210,20 @@ class MainDialog extends SkillDialog {
                     console.log("-----------------------------------------------------",skills[0])
                     // global.device_id = skills[0].deviceId;
                     for(let i=0; i<skills.length; ++i){
+                        let imageUrl = ""
+                        switch(skills[i].TEMPLATE) {
+                            case "In-App Walkthrough":
+                                imageUrl =  "http://api.techforce.ai/botapi/image/walkthrough_icon_5dc2ef1266.png";
+                                break;
+                            case "UserOnboarding":
+                                imageUrl = "http://api.techforce.ai/botapi/image/user_onboarding_bdd406d7d6.png";
+                                break;
+                            // case "UserOnboarding":
+                            //     imageUrl = "http://api.techforce.ai/botapi/image/user_onboarding_bdd406d7d6.png";
+                            //     break;
+                            default:
+                                imageUrl = "http://api.techforce.ai/botapi/image/walkthrough_icon_5dc2ef1266.png";
+                        }
                         let card = {
                             contentType: "application/vnd.microsoft.card.adaptive",
                             content: {
@@ -220,7 +234,7 @@ class MainDialog extends SkillDialog {
                                     {
                                         type: "Image",
                                         style: "Person",
-                                        url: skills[i].IMAGE,
+                                        url: imageUrl,
                                         size: "Large"
                                     },
                                     {
@@ -360,7 +374,7 @@ class MainDialog extends SkillDialog {
                     "type": "executeSkill",
                     "skillId": `${parseInt(result)}`,
                     "source": "teamsBot",
-                    "orgId": global.orgId,
+                    "orgId": `${global.orgId}`,
                     "deviceId": `${data.fcmList.id}`,
                     "variables": ""
                 },

@@ -322,7 +322,7 @@ class SkillDialog extends LogoutDialog {
                     "type": "executeSkill",
                     "skillId": `${parseInt(result.split("_")[0])}`,
                     "source": "teamsBot",
-                    "orgId": global.orgId,
+                    "orgId": `${global.orgId}`,
                     "deviceId": `${data.fcmList.id}`,
                     "variables": ""
                 },
